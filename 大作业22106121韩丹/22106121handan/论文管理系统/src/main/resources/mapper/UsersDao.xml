@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.tust.dao.UsersDao">
+
+    <resultMap type="com.example.tust.entity.Users" id="UsersMap">
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="username" column="username" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="role" column="role" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="UsersMap">
+        select
+          user_id, username, password, role
+        from users
+        where user_id = #{userId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="UsersMap">
+        select
+          user_id, username, password, role
+        from users
+        <where>
+            <if test="users.userId != null">
+                and user_id = #{users.userId}
+            </if>
+            <if test="users.username != null and users.username != ''">
+                and username = #{users.username}
+            </if>
+            <if test="users.password != null and users.password != ''">
+                and password = #{users.password}
+            </if>
+            <if test="users.role != null and users.role != ''">
+                and role = #{users.role}
+            </if>
+        </where>
+        limit #{pageIndex}, #{pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from users
+        <where>
+            <if test="users.userId != null">
+                and user_id = #{users.userId}
+            </if>
+            <if test="users.username != null and users.username != ''">
+                and username = #{users.username}
+            </if>
+            <if test="users.password != null and users.password != ''">
+                and password = #{users.password}
+            </if>
+            <if test="users.role != null and users.role != ''">
+                and role = #{users.role}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="userId" useGeneratedKeys="true">
+        insert into users(username, password, role)
+        values (#{users.username}, #{users.password}, #{users.role})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="userId" useGeneratedKeys="true">
+        insert into users(username, password, role)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.username}, #{entity.password}, #{entity.role})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="userId" useGeneratedKeys="true">
+        insert into users(username, password, role)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.username}, #{entity.password}, #{entity.role})
+        </foreach>
+        on duplicate key update
+        username = values(username),
+        password = values(password),
+        role = values(role)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update users
+        <set>
+            <if test="users.username != null and users.username != ''">
+                username = #{users.username},
+            </if>
+            <if test="users.password != null and users.password != ''">
+                password = #{users.password},
+            </if>
+            <if test="users.role != null and users.role != ''">
+                role = #{users.role},
+            </if>
+        </set>
+        where user_id = #{users.userId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from users where user_id = #{userId}
+    </delete>
+
+</mapper>
+

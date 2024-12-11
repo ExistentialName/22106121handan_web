@@ -1,0 +1,107 @@
+<style>
+    .layui-form-item .layui-input-company {
+        width: auto;
+        padding-right: 10px;
+        line-height: 38px;
+    }
+</style>
+<div class="layuimini-container layuimini-page-anim">
+    <div class="layuimini-main">
+
+        <div class="layui-form layuimini-form" lay-filter="useredit">
+            <input type="hidden" name="userId" value="">
+            <div class="layui-form-item">
+                <label class="layui-form-label required">账号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="username" lay-verify="required" lay-reqtext="账号不能为空"
+                           placeholder="请输入账号" value="" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required">密码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="password" lay-verify="required" lay-reqtext="密码不能为空"
+                           placeholder="请输入密码" value="" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required">角色</label>
+                <div class="layui-input-block">
+                    <input type="text" name="role" lay-verify="required" lay-reqtext="角色不能为空"
+                           placeholder="请输入角色  管理员、普通用户" value="" class="layui-input">
+                </div>
+            </div>
+
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-normal" lay-submit
+                            lay-filter="saveBtn">确认保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" th:value="${session.userId}" id="userId">
+<script src="js/jquery-3.3.1.js"></script>
+<script>
+    layui.use(['form', 'layer', 'miniPage'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            miniPage = layui.miniPage;
+
+        /**
+         * 初始化表单，要加上，不然刷新部分组件可能会不加载
+         */
+        form.render();
+        var id = $("#userId").val();
+        $.ajax({
+            url: "/users/getUsersById/"+id,
+           // data: {id: id},
+            type: "get",
+            success: function (data) {
+                console.log(data);
+                // data = JSON.parse(data);
+                data = data.data;
+                form.val("useredit", {
+                    "userId": data.userId,
+                    "username": data.username,
+                    "password": data.password,
+                    "role": data.role
+                });
+            }
+        })
+
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            var index = layer.alert("确定修改用户信息！", {
+                title: '提交修改信息'
+            }, function () {
+                console.log(data);
+                $.ajax({
+                    url: "/users/editUsers",
+                    data: JSON.stringify(data.field),
+                    type:"post",
+                    dataType:"json",
+                    contentType:"application/json",
+                    success: function (data) {
+                        console.log(data);
+                        // data = JSON.parse(data);
+                        if (data.code == "0000") {
+                            // 关闭弹出层
+                            layer.close(index);
+                            miniPage.hashHome();
+                        } else {
+                            layer.alert('修改失败！请输入正确信息。');
+                        }
+                    }
+                })
+
+            });
+            return false;
+        });
+
+    });
+</script>
